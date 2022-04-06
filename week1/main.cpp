@@ -2,17 +2,22 @@
 
 using namespace std;
 
+bool isAlphabet(char x)
+{
+    return (x > 64 && x < 91) || (x > 96 && x < 123);
+}
+
 string formatString(string s)
 {
     int n = s.length();
-    while (!((s[n - 1] > 64 && s[n - 1] < 91) || (s[n - 1] > 96 && s[n - 1] < 123)))
+    while (!isAlphabet(s[n - 1]))
     {
         s.pop_back();
         n -= 1;
         if (n <= 0)
             return "";
     }
-    while (!((s[0] > 64 && s[0] < 91) || (s[0] > 96 && s[0] < 123)))
+    while (!isAlphabet(s[0]))
     {
         for (int i = 0; i < n - 1; i++)
         {
@@ -23,13 +28,30 @@ string formatString(string s)
         if (n <= 0)
             return "";
     }
-    s[0] = tolower(s[0]);
+    for (int i = 0; i < s.length(); i++)
+    {
+        s[i] = tolower(s[i]);
+    }
     return s;
+}
+
+void handleIndex(bool checkDot, map<string, set<int>> &index, set<string> stopw, string w, int line)
+{
+    if (!(!checkDot && w[0] >= 65 && w[0] <= 90))
+    {
+        if (stopw.find(w) == stopw.end())
+        {
+
+            index[w].insert(line);
+        }
+    }
+    else
+        cout << w << checkDot << endl;
 }
 
 int main()
 {
-    fstream fi("vanban.txt", ios::in);
+    fstream fi("vanban1.txt", ios::in);
     fstream fstopw("stopw.txt", ios::in);
     set<string> stopw;
     int line = 0;
@@ -52,25 +74,27 @@ int main()
         line++;
         string lineString;
         getline(fi, lineString);
-        stringstream ss(lineString);
         string w;
         bool checkDot = false;
-        while (ss >> w)
+        int idx = 0;
+        while (idx < lineString.length())
         {
-            if (!(!checkDot && w[0] >= 65 && w[0] <= 90))
+            char c = lineString[idx];
+            if (isAlphabet(c))
             {
-
-                if (w[w.length() - 1] == '.')
-                    checkDot = true;
-                string word = formatString(w);
-                if (word != "" && (stopw.find(word) == stopw.end()))
-                {
-
-                    index[word].insert(line);
-                }
+                w.push_back(c);
             }
-            // else
-            //     cout << w << endl;
+            if (!isAlphabet(c))
+            {
+                if (c != ' ')
+                    checkDot = false;
+                if (w != "")
+                    handleIndex(checkDot, index, stopw, w, line);
+                w.clear();
+                if (c == '.')
+                    checkDot = true;
+            }
+            idx++;
         }
     }
 
